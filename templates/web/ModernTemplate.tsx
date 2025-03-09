@@ -188,7 +188,14 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
       }
 
       // Backend sunucusuna doğrudan bağlan
-      const wsUrl = `ws://localhost:8000/ws/cv/${id}/${translation_key}/${lang}/`;
+      // API URL'yi .env dosyasından alıyoruz
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      // ws:// veya wss:// protokolünü belirle
+      const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
+      // URL'den http:// veya https:// kısmını çıkar
+      const apiHost = apiUrl.replace(/^https?:\/\//, '');
+      // WebSocket URL'sini oluştur
+      const wsUrl = `${wsProtocol}://${apiHost}/ws/cv/${id}/${translation_key}/${lang}/`;
       console.log('WebSocket URL:', wsUrl);
       
       try {
