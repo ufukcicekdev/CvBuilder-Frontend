@@ -236,9 +236,17 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
       const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
       // URL'den http:// veya https:// kısmını çıkar
       const apiHost = apiUrl.replace(/^https?:\/\//, '');
-      // WebSocket URL'sini oluştur
-      const wsUrl = `${wsProtocol}://${apiHost}/ws/cv/${id}/${translation_key}/${lang}/`;
-      console.log('WebSocket URL:', wsUrl);
+      // template_id'yi URL'den al
+      const templateId = router.asPath.split('/')[2];
+      
+      if (!templateId) {
+        console.error('Missing template_id parameter');
+        return;
+      }
+      
+      // WebSocket URL'sini oluştur (template_id ile)
+      const wsUrl = `${wsProtocol}://${apiHost}/ws/cv/${templateId}/${id}/${translation_key}/${lang}/`;
+      console.log('WebSocket URL with template_id:', wsUrl);
 
       try {
         ws = new WebSocket(wsUrl);
