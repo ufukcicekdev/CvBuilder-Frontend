@@ -43,6 +43,9 @@ if (typeof window !== 'undefined') {
     // Request interceptor - only in browser
     axiosInstance.interceptors.request.use(
         async (config) => {
+            // Debug için URL'yi loglayalım
+            console.log(`Request to: ${config.url}`);
+            
             // Clear any existing Authorization header
             delete config.headers.Authorization;
             
@@ -50,13 +53,20 @@ if (typeof window !== 'undefined') {
             const token = localStorage.getItem('accessToken');
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
+                console.log('Using token from localStorage');
             } else {
                 // If no token in localStorage, try to get from session
                 const session = await getSession();
                 if (session?.accessToken) {
                     config.headers.Authorization = `Bearer ${session.accessToken}`;
+                    console.log('Using token from NextAuth session');
+                } else {
+                    console.log('No token found in localStorage or session');
                 }
             }
+            
+            // Debug için header'ları loglayalım
+            console.log('Request headers:', config.headers);
             
             return config;
         },
@@ -90,12 +100,16 @@ if (typeof window !== 'undefined') {
                     // Try to get new token from localStorage first
                     const refreshToken = localStorage.getItem('refreshToken');
                     if (refreshToken) {
-                        const response = await axios.post('/api/users/token/refresh/', {
+                        console.log('Refreshing token with localStorage refreshToken');
+                        // Burada axios yerine axiosInstance kullanmıyoruz çünkü
+                        // axiosInstance kullanırsak sonsuz döngüye girebiliriz
+                        const response = await axios.post(`${API_URL}/api/users/token/refresh/`, {
                             refresh: refreshToken
                         });
                         const { access } = response.data;
                         localStorage.setItem('accessToken', access);
                         originalRequest.headers.Authorization = `Bearer ${access}`;
+                        console.log('Token refreshed successfully');
                         processQueue(null, access);
                         return axiosInstance(originalRequest);
                     }
@@ -103,11 +117,13 @@ if (typeof window !== 'undefined') {
                     // If no refresh token in localStorage, try session
                     const session = await getSession();
                     if (session?.accessToken) {
+                        console.log('Using token from NextAuth session after refresh attempt');
                         originalRequest.headers.Authorization = `Bearer ${session.accessToken}`;
                         processQueue(null, session.accessToken);
                         return axiosInstance(originalRequest);
                     }
                 } catch (refreshError) {
+                    console.error('Token refresh error:', refreshError);
                     processQueue(refreshError, null);
                     // Clear all auth data on refresh error
                     localStorage.removeItem('accessToken');
