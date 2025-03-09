@@ -225,13 +225,13 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
           lastMessageTime = Date.now();
           
           try {
-            // Ping yanıtını kontrol et - düz metin olabilir
-            if (event.data === 'ping' || event.data === 'pong' || 
-                event.data === '{"type":"pong"}' || 
-                event.data.includes('"type":"pong"')) {
-              console.log('Received ping/pong from server');
-              return;
-            }
+            // // Ping yanıtını kontrol et - düz metin olabilir
+            // if (event.data === 'ping' || event.data === 'pong' || 
+                // event.data === '{"type":"pong"}' || 
+                // event.data.includes('"type":"pong"')) {
+              // console.log('Received ping/pong from server');
+              // return;
+            // }
             
             // Mesajı JSON olarak parse et
             const parsedData = JSON.parse(event.data);

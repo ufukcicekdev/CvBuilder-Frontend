@@ -267,12 +267,12 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
           
           try {
             // Ping yanıtını kontrol et - düz metin olabilir
-            if (event.data === 'ping' || event.data === 'pong' || 
-                event.data === '{"type":"pong"}' || 
-                event.data.includes('"type":"pong"')) {
-              console.log('Received ping/pong from server');
-              return;
-            }
+            // if (event.data === 'ping' || event.data === 'pong' || 
+                // event.data === '{"type":"pong"}' || 
+                // event.data.includes('"type":"pong"')) {
+              // console.log('Received ping/pong from server');
+              // return;
+            // }
             
             // Mesajı JSON olarak parse et
             const parsedData = JSON.parse(event.data);
