@@ -221,13 +221,79 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
         console.log('WebSocket instance created');
 
         ws.onopen = () => {
-          console.log('WebSocket connection established successfully');
+          console.log('WebSocket connection established successfully, readyState:', ws?.readyState);
+          lastMessageTime = Date.now();
+          
+          if (connectionTimeout) {
+            clearTimeout(connectionTimeout);
+            connectionTimeout = null;
+          }
+          
           reconnectAttempts = 0;
+          
+          // Bağlantıyı canlı tutmak için her 20 saniyede bir ping gönder
+          pingInterval = setInterval(() => {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              console.log('Sending ping to keep connection alive');
+              try {
+                ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+                lastMessageTime = Date.now();
+              } catch (error) {
+                console.error('Error sending ping:', error);
+              }
+            } else {
+              console.warn('Cannot send ping, WebSocket not open. readyState:', ws?.readyState);
+            }
+          }, 20000);
+          
+          // Bağlantı durumunu düzenli olarak kontrol et
+          connectionCheckInterval = setInterval(() => {
+            const now = Date.now();
+            const timeSinceLastMessage = now - lastMessageTime;
+            
+            console.log('Connection check - Time since last message:', timeSinceLastMessage / 1000, 'seconds');
+            
+            // 60 saniyeden fazla mesaj alınmadıysa bağlantıyı yeniden kur
+            if (timeSinceLastMessage > 60000) {
+              console.warn('No messages received for 60 seconds, reconnecting...');
+              if (ws) {
+                ws.close();
+                ws = null;
+              }
+              connectWebSocket();
+            }
+          }, 30000);
+          
+          // Bağlantı kurulduğunda bir başlangıç mesajı gönder
+          try {
+            console.log('Sending init message to server');
+            ws.send(JSON.stringify({ 
+              type: 'init', 
+              cv_id: id,
+              template_id: router.asPath.split('/')[2],
+              translation_key: translation_key,
+              lang: lang,
+              timestamp: Date.now() 
+            }));
+            
+            // Test mesajı - backend'in yanıt verip vermediğini kontrol etmek için
+            console.log('Sending test message to server');
+            ws.send(JSON.stringify({ 
+              type: 'test_request', 
+              message: 'Please send back CV data' 
+            }));
+          } catch (error) {
+            console.error('Error sending init message:', error);
+          }
         };
 
         ws.onmessage = (event) => {
           console.log('Received WebSocket message:', event.data);
           lastMessageTime = Date.now();
+          
+          // Ham mesajı loglayalım
+          console.log('Raw message type:', typeof event.data);
+          console.log('Raw message length:', event.data.length);
           
           // Düz metin ping/pong mesajlarını kontrol et
           if (typeof event.data === 'string') {
@@ -235,6 +301,9 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
               console.log('Received plain text ping/pong from server');
               return;
             }
+            
+            // Mesaj içeriğini kontrol et
+            console.log('Message content first 100 chars:', event.data.substring(0, 100));
           }
           
           try {
@@ -269,27 +338,40 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
                     console.log('New CV state:', data);
                     return { ...data };
                   });
+                } else {
+                  console.error('Received cv_update message without message data:', parsedData);
                 }
+                break;
+                
+              case 'test_response':
+                console.log('Received test response from server:', parsedData);
                 break;
                 
               default:
                 // Tip belirtilmemiş veya bilinmeyen tip - doğrudan veriyi kullan
                 console.log('Received message with unknown or no type, using direct data');
-                const data = parsedData;
                 
-                // Preserve video_info if it's missing in the new data but exists in the ref
-                if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
-                  console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
-                  data.video_info = videoInfoRef.current;
+                // Veri yapısını kontrol et
+                if (parsedData.id && (parsedData.personal_info || parsedData.education || parsedData.experience)) {
+                  console.log('Message appears to be CV data, updating state');
+                  const data = parsedData;
+                  
+                  // Preserve video_info if it's missing in the new data but exists in the ref
+                  if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
+                    console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
+                    data.video_info = videoInfoRef.current;
+                  }
+                  
+                  // State'i güncelle ve UI'ı yeniden render et
+                  console.log('Updating CV state with new data from WebSocket (direct format)');
+                  setCv(prevCv => {
+                    console.log('Previous CV state:', prevCv);
+                    console.log('New CV state:', data);
+                    return { ...data };
+                  });
+                } else {
+                  console.log('Message does not appear to be CV data, ignoring');
                 }
-                
-                // State'i güncelle ve UI'ı yeniden render et
-                console.log('Updating CV state with new data from WebSocket (direct format)');
-                setCv(prevCv => {
-                  console.log('Previous CV state:', prevCv);
-                  console.log('New CV state:', data);
-                  return { ...data };
-                });
                 break;
             }
           } catch (error) {
