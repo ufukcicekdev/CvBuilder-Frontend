@@ -267,21 +267,25 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
           // Bağlantı kurulduğunda bir başlangıç mesajı gönder
           try {
             console.log('Sending init message to server');
-            ws.send(JSON.stringify({ 
-              type: 'init', 
-              cv_id: id,
-              template_id: router.asPath.split('/')[2],
-              translation_key: translation_key,
-              lang: lang,
-              timestamp: Date.now() 
-            }));
-            
-            // Test mesajı - backend'in yanıt verip vermediğini kontrol etmek için
-            console.log('Sending test message to server');
-            ws.send(JSON.stringify({ 
-              type: 'test_request', 
-              message: 'Please send back CV data' 
-            }));
+            if (ws && ws.readyState === WebSocket.OPEN) {
+              ws.send(JSON.stringify({ 
+                type: 'init', 
+                cv_id: id,
+                template_id: router.asPath.split('/')[2],
+                translation_key: translation_key,
+                lang: lang,
+                timestamp: Date.now() 
+              }));
+              
+              // Test mesajı - backend'in yanıt verip vermediğini kontrol etmek için
+              console.log('Sending test message to server');
+              ws.send(JSON.stringify({ 
+                type: 'test_request', 
+                message: 'Please send back CV data' 
+              }));
+            } else {
+              console.error('Cannot send init message, WebSocket not open. readyState:', ws?.readyState);
+            }
           } catch (error) {
             console.error('Error sending init message:', error);
           }
