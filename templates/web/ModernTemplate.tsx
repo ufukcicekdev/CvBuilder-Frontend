@@ -217,7 +217,17 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
 
         ws.onmessage = (event) => {
           console.log('Received WebSocket message:', event.data);
+          lastMessageTime = Date.now();
+          
           try {
+            // Ping yanıtını kontrol et - düz metin olabilir
+            if (event.data === 'ping' || event.data === 'pong' || 
+                event.data === '{"type":"pong"}' || 
+                event.data.includes('"type":"pong"')) {
+              console.log('Received ping/pong from server');
+              return;
+            }
+            
             const data = JSON.parse(event.data);
             
             // Preserve video_info if it's missing in the new data but exists in the ref
@@ -229,6 +239,8 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
             setCv(data);
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
+            // JSON parse hatası olduğunda mesajı loglayalım
+            console.error('Raw message that failed to parse:', event.data);
           }
         };
 
