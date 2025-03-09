@@ -195,8 +195,33 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
       // Close existing connection if any
       if (ws) {
         ws.close();
+        ws = null;
       }
 
+      // Clear any existing timeouts and intervals
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+      
+      if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+      }
+      
+      if (connectionTimeout) {
+        clearTimeout(connectionTimeout);
+        connectionTimeout = null;
+      }
+      
+      if (connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+        connectionCheckInterval = null;
+      }
+
+      // Template ID'yi URL'den al
+      const templateId = router.asPath.split('/')[2] || 'web-template1'; // Varsayılan değer
+      
       // Backend sunucusuna doğrudan bağlan
       // API URL'yi .env dosyasından alıyoruz
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -204,21 +229,45 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
       const wsProtocol = apiUrl.startsWith('https') ? 'wss' : 'ws';
       // URL'den http:// veya https:// kısmını çıkar
       const apiHost = apiUrl.replace(/^https?:\/\//, '');
-      // template_id'yi URL'den al
-      const templateId = router.asPath.split('/')[2];
       
-      if (!templateId) {
-        console.error('Missing template_id parameter');
-        return;
-      }
-      
-      // WebSocket URL'sini oluştur (template_id ile)
+      // WebSocket URL'sini talimatlara göre oluştur:
+      // 1. Template ID
+      // 2. CV ID
+      // 3. Translation Key
+      // 4. Language
       const wsUrl = `${wsProtocol}://${apiHost}/ws/cv/${templateId}/${id}/${translation_key}/${lang}/`;
-      console.log('WebSocket URL with template_id:', wsUrl);
+      console.log('WebSocket URL with correct parameters:', wsUrl);
+      
+      // Grup adını backend'in beklediği formatta oluştur
+      const groupName = `cv_${templateId}_${id}_${translation_key}_${lang}`;
+      console.log('WebSocket group name:', groupName);
       
       try {
+        // WebSocket bağlantısını oluştur
         ws = new WebSocket(wsUrl);
-        console.log('WebSocket instance created');
+        console.log('WebSocket instance created, readyState:', ws.readyState);
+        
+        // Bağlantı durumunu kontrol et
+        console.log('WebSocket connection state:', {
+          CONNECTING: ws.readyState === WebSocket.CONNECTING,
+          OPEN: ws.readyState === WebSocket.OPEN,
+          CLOSING: ws.readyState === WebSocket.CLOSING,
+          CLOSED: ws.readyState === WebSocket.CLOSED
+        });
+
+        // Bağlantı zaman aşımı - 15 saniye
+        connectionTimeout = setTimeout(() => {
+          if (ws && ws.readyState !== WebSocket.OPEN) {
+            console.error('WebSocket connection timeout after 15 seconds');
+            ws.close();
+            
+            if (reconnectAttempts < maxReconnectAttempts) {
+              reconnectAttempts++;
+              console.log(`Connection timeout. Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+              reconnectTimeout = setTimeout(connectWebSocket, reconnectDelay);
+            }
+          }
+        }, 15000);
 
         ws.onopen = () => {
           console.log('WebSocket connection established successfully, readyState:', ws?.readyState);
@@ -236,7 +285,7 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
             if (ws && ws.readyState === WebSocket.OPEN) {
               console.log('Sending ping to keep connection alive');
               try {
-                ws.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }));
+                ws.send(JSON.stringify({ action: 'ping', timestamp: Date.now() }));
                 lastMessageTime = Date.now();
               } catch (error) {
                 console.error('Error sending ping:', error);
@@ -268,20 +317,25 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
           try {
             console.log('Sending init message to server');
             if (ws && ws.readyState === WebSocket.OPEN) {
+              // Bağlantı bilgilerini gönder
               ws.send(JSON.stringify({ 
-                type: 'init', 
+                action: 'init', 
+                template_id: templateId,
                 cv_id: id,
-                template_id: router.asPath.split('/')[2],
                 translation_key: translation_key,
                 lang: lang,
+                group_name: groupName,
                 timestamp: Date.now() 
               }));
               
-              // Test mesajı - backend'in yanıt verip vermediğini kontrol etmek için
-              console.log('Sending test message to server');
+              // CV verisini talep et
+              console.log('Requesting CV data from server');
               ws.send(JSON.stringify({ 
-                type: 'test_request', 
-                message: 'Please send back CV data' 
+                action: 'get_cv_data', 
+                template_id: templateId,
+                cv_id: id,
+                translation_key: translation_key,
+                lang: lang
               }));
             } else {
               console.error('Cannot send init message, WebSocket not open. readyState:', ws?.readyState);
@@ -303,6 +357,10 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
           if (typeof event.data === 'string') {
             if (event.data === 'ping' || event.data === 'pong') {
               console.log('Received plain text ping/pong from server');
+              // Ping mesajına pong ile yanıt ver
+              if (event.data === 'ping' && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send('pong');
+              }
               return;
             }
             
@@ -315,19 +373,26 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
             const parsedData = JSON.parse(event.data);
             console.log('Parsed WebSocket message:', parsedData);
             
-            // Mesaj tipine göre işlem yap
-            switch (parsedData.type) {
+            // Mesaj tipine göre işlem yap (action alanını kontrol et)
+            switch (parsedData.action) {
               case 'ping':
-              case 'pong':
-                console.log('Received JSON ping/pong from server');
+                console.log('Received JSON ping from server');
+                // Ping mesajına pong ile yanıt ver
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ action: 'pong', timestamp: Date.now() }));
+                }
                 return;
                 
-              case 'cv_update':
-                if (parsedData.message) {
-                  console.log('Received cv_update message:', parsedData.message);
-                  
-                  // message içindeki veriyi kullan
-                  const data = parsedData.message;
+              case 'pong':
+                console.log('Received JSON pong from server');
+                return;
+                
+              case 'update':
+                console.log('Received update message:', parsedData.data);
+                
+                if (parsedData.data) {
+                  // data içindeki veriyi kullan
+                  const data = parsedData.data;
                   
                   // Preserve video_info if it's missing in the new data but exists in the ref
                   if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
@@ -343,17 +408,13 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
                     return { ...data };
                   });
                 } else {
-                  console.error('Received cv_update message without message data:', parsedData);
+                  console.error('Received update message without data:', parsedData);
                 }
-                break;
-                
-              case 'test_response':
-                console.log('Received test response from server:', parsedData);
                 break;
                 
               default:
                 // Tip belirtilmemiş veya bilinmeyen tip - doğrudan veriyi kullan
-                console.log('Received message with unknown or no type, using direct data');
+                console.log('Received message with unknown or no action, checking for CV data');
                 
                 // Veri yapısını kontrol et
                 if (parsedData.id && (parsedData.personal_info || parsedData.education || parsedData.experience)) {
@@ -390,10 +451,15 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
           console.error('WebSocket readyState:', ws?.readyState);
           console.error('WebSocket URL:', wsUrl);
           
+          if (connectionTimeout) {
+            clearTimeout(connectionTimeout);
+            connectionTimeout = null;
+          }
+          
           if (reconnectAttempts < maxReconnectAttempts) {
             reconnectAttempts++;
-            console.log(`Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
-            setTimeout(connectWebSocket, reconnectDelay);
+            console.log(`WebSocket error. Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+            reconnectTimeout = setTimeout(connectWebSocket, reconnectDelay);
           } else {
             console.error('Max reconnection attempts reached');
           }
@@ -404,17 +470,39 @@ const ModernTemplate: React.FC<ModernTemplateProps> = ({ cv: initialCv }) => {
             code: event.code,
             reason: event.reason,
             wasClean: event.wasClean,
-            url: wsUrl
+            url: wsUrl,
+            readyState: ws?.readyState
           });
+
+          if (connectionTimeout) {
+            clearTimeout(connectionTimeout);
+            connectionTimeout = null;
+          }
+          
+          if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+          }
+          
+          if (connectionCheckInterval) {
+            clearInterval(connectionCheckInterval);
+            connectionCheckInterval = null;
+          }
 
           if (!event.wasClean && reconnectAttempts < maxReconnectAttempts) {
             reconnectAttempts++;
-            console.log(`Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
-            setTimeout(connectWebSocket, reconnectDelay);
+            console.log(`Connection closed. Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+            reconnectTimeout = setTimeout(connectWebSocket, reconnectDelay);
           }
         };
       } catch (error) {
         console.error('Error creating WebSocket:', error);
+        
+        if (reconnectAttempts < maxReconnectAttempts) {
+          reconnectAttempts++;
+          console.log(`Error creating WebSocket. Reconnecting... Attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
+          reconnectTimeout = setTimeout(connectWebSocket, reconnectDelay);
+        }
       }
     };
 
