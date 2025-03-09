@@ -220,8 +220,13 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
 
     let ws: WebSocket | null = null;
     let reconnectAttempts = 0;
-    const maxReconnectAttempts = 5;
+    const maxReconnectAttempts = 10; // Daha fazla yeniden bağlanma denemesi
     const reconnectDelay = 3000; // 3 seconds
+    let reconnectTimeout: NodeJS.Timeout | null = null;
+    let pingInterval: NodeJS.Timeout | null = null;
+    let connectionTimeout: NodeJS.Timeout | null = null;
+    let lastMessageTime = Date.now(); // Son mesaj zamanı
+    let connectionCheckInterval: NodeJS.Timeout | null = null;
 
     const connectWebSocket = () => {
       // Close existing connection if any
