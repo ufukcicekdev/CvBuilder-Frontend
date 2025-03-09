@@ -274,15 +274,36 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
               return;
             }
             
-            const data = JSON.parse(event.data);
+            // Mesajı JSON olarak parse et
+            const parsedData = JSON.parse(event.data);
+            console.log('Parsed WebSocket message:', parsedData);
             
-            // Preserve video_info if it's missing in the new data but exists in the ref
-            if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
-              console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
-              data.video_info = videoInfoRef.current;
+            // Django Channels'dan gelen mesaj formatını kontrol et
+            if (parsedData.type === 'cv_update' && parsedData.message) {
+              console.log('Received cv_update message:', parsedData.message);
+              
+              // message içindeki veriyi kullan
+              const data = parsedData.message;
+              
+              // Preserve video_info if it's missing in the new data but exists in the ref
+              if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
+                console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
+                data.video_info = videoInfoRef.current;
+              }
+              
+              setCv(data);
+            } else {
+              // Doğrudan gelen veriyi kullan (eski format için)
+              const data = parsedData;
+              
+              // Preserve video_info if it's missing in the new data but exists in the ref
+              if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
+                console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
+                data.video_info = videoInfoRef.current;
+              }
+              
+              setCv(data);
             }
-            
-            setCv(data);
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
             // JSON parse hatası olduğunda mesajı loglayalım
