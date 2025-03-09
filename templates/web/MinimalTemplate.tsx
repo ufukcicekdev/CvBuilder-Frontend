@@ -214,6 +214,11 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
     }
   }, [lang, id, translation_key]);
 
+  // CV state'i değiştiğinde log ekleyelim
+  useEffect(() => {
+    console.log('CV state updated:', cv);
+  }, [cv]);
+
   // WebSocket connection for real-time updates
   useEffect(() => {
     if (!id || !translation_key || !lang) return;
@@ -265,44 +270,68 @@ const MinimalTemplate: React.FC<MinimalTemplateProps> = ({ cv: initialCv }) => {
           console.log('Received WebSocket message:', event.data);
           lastMessageTime = Date.now();
           
+          // Düz metin ping/pong mesajlarını kontrol et
+          if (typeof event.data === 'string') {
+            if (event.data === 'ping' || event.data === 'pong') {
+              console.log('Received plain text ping/pong from server');
+              return;
+            }
+          }
+          
           try {
-            // Ping yanıtını kontrol et - düz metin olabilir
-            // if (event.data === 'ping' || event.data === 'pong' || 
-                // event.data === '{"type":"pong"}' || 
-                // event.data.includes('"type":"pong"')) {
-              // console.log('Received ping/pong from server');
-              // return;
-            // }
-            
             // Mesajı JSON olarak parse et
             const parsedData = JSON.parse(event.data);
             console.log('Parsed WebSocket message:', parsedData);
             
-            // Django Channels'dan gelen mesaj formatını kontrol et
-            if (parsedData.type === 'cv_update' && parsedData.message) {
-              console.log('Received cv_update message:', parsedData.message);
-              
-              // message içindeki veriyi kullan
-              const data = parsedData.message;
-              
-              // Preserve video_info if it's missing in the new data but exists in the ref
-              if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
-                console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
-                data.video_info = videoInfoRef.current;
-              }
-              
-              setCv(data);
-            } else {
-              // Doğrudan gelen veriyi kullan (eski format için)
-              const data = parsedData;
-              
-              // Preserve video_info if it's missing in the new data but exists in the ref
-              if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
-                console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
-                data.video_info = videoInfoRef.current;
-              }
-              
-              setCv(data);
+            // Mesaj tipine göre işlem yap
+            switch (parsedData.type) {
+              case 'ping':
+              case 'pong':
+                console.log('Received JSON ping/pong from server');
+                return;
+                
+              case 'cv_update':
+                if (parsedData.message) {
+                  console.log('Received cv_update message:', parsedData.message);
+                  
+                  // message içindeki veriyi kullan
+                  const data = parsedData.message;
+                  
+                  // Preserve video_info if it's missing in the new data but exists in the ref
+                  if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
+                    console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
+                    data.video_info = videoInfoRef.current;
+                  }
+                  
+                  // State'i güncelle ve UI'ı yeniden render et
+                  console.log('Updating CV state with new data from WebSocket');
+                  setCv(prevCv => {
+                    console.log('Previous CV state:', prevCv);
+                    console.log('New CV state:', data);
+                    return { ...data };
+                  });
+                }
+                break;
+                
+              default:
+                // Tip belirtilmemiş veya bilinmeyen tip - doğrudan veriyi kullan
+                console.log('Received message with unknown or no type, using direct data');
+                const data = parsedData;
+                
+                // Preserve video_info if it's missing in the new data but exists in the ref
+                if (!data.video_info?.video_url && videoInfoRef.current?.video_url) {
+                  console.log('Preserving video_info from ref in WebSocket update:', videoInfoRef.current);
+                  data.video_info = videoInfoRef.current;
+                }
+                
+                // State'i güncelle ve UI'ı yeniden render et
+                console.log('Updating CV state with new data from WebSocket (direct format)');
+                setCv(prevCv => {
+                  console.log('Previous CV state:', prevCv);
+                  console.log('New CV state:', data);
+                  return { ...data };
+                });
+                break;
             }
           } catch (error) {
             console.error('Error parsing WebSocket message:', error);
