@@ -1,13 +1,28 @@
 import axios from 'axios';
 import { getSession, signOut } from 'next-auth/react';
 
+// API URL'yi doğrudan .env dosyasından alıyoruz
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+console.log('Axios using API URL:', API_URL); // Debug için
+
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api',
+    baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
     withCredentials: true, // CSRF ve auth token'lar için önemli
 });
+
+// Backend'deki session API'sini kullanmak için yardımcı fonksiyon
+export const getBackendSession = async () => {
+    try {
+        const response = await axiosInstance.get('/api/auth/session/');
+        return response.data;
+    } catch (error) {
+        console.error('Backend session error:', error);
+        return null;
+    }
+};
 
 // Only add interceptors in browser environment
 if (typeof window !== 'undefined') {
