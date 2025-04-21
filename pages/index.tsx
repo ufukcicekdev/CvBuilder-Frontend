@@ -34,9 +34,20 @@ import NextLink from 'next/link';
 import SEO from '../components/SEO';
 import { useAuth } from '../contexts/AuthContext';
 
-// Hero SVG
+// Global window tipi genişletme
+declare global {
+  interface Window {
+    gtag: (command: string, action: string, params?: any) => void;
+  }
+  
+  interface PerformanceEntry {
+    element?: Element;
+  }
+}
+
+// Hero SVG - optimize edilmiş ve boyutları belirlenmiş
 const HeroSvg = () => (
-  <svg width="100%" height="100%" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <svg width="100%" height="100%" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <defs>
       <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
         <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.8"/>
@@ -47,48 +58,27 @@ const HeroSvg = () => (
       </clipPath>
     </defs>
     
-    {/* Background Elements */}
+    {/* Background Elements - simplified */}
     <circle cx="650" cy="120" r="80" fill="url(#gradient1)" opacity="0.1" />
     <circle cx="150" cy="500" r="100" fill="url(#gradient1)" opacity="0.1" />
-    <circle cx="400" cy="300" r="150" fill="url(#gradient1)" opacity="0.05" />
     
     {/* CV Document */}
     <rect x="110" y="70" width="580" height="380" rx="20" fill="#FFFFFF" stroke="#E5E7EB" strokeWidth="2" />
     
-    {/* CV Content */}
+    {/* CV Content - minimized */}
     <g clipPath="url(#screenMask)">
-      {/* Header */}
       <rect x="110" y="70" width="580" height="80" fill="#F9FAFB" />
       <circle cx="170" cy="110" r="30" fill="#4F46E5" />
       <rect x="220" y="95" width="200" height="12" rx="6" fill="#111827" />
       <rect x="220" y="115" width="150" height="10" rx="5" fill="#6B7280" />
-      
-      {/* Content */}
       <rect x="130" y="170" width="200" height="15" rx="7" fill="#4F46E5" />
       <rect x="130" y="195" width="540" height="10" rx="5" fill="#E5E7EB" />
       <rect x="130" y="215" width="540" height="10" rx="5" fill="#E5E7EB" />
-      <rect x="130" y="235" width="540" height="10" rx="5" fill="#E5E7EB" />
-      
       <rect x="130" y="270" width="200" height="15" rx="7" fill="#4F46E5" />
       <rect x="130" y="295" width="540" height="10" rx="5" fill="#E5E7EB" />
-      <rect x="130" y="315" width="540" height="10" rx="5" fill="#E5E7EB" />
-      <rect x="130" y="335" width="540" height="10" rx="5" fill="#E5E7EB" />
-      
       <rect x="130" y="370" width="200" height="15" rx="7" fill="#4F46E5" />
       <rect x="130" y="395" width="540" height="10" rx="5" fill="#E5E7EB" />
-      <rect x="130" y="415" width="540" height="10" rx="5" fill="#E5E7EB" />
     </g>
-    
-    {/* Animated Elements */}
-    <circle cx="750" cy="200" r="15" fill="#4F46E5" opacity="0.7">
-      <animate attributeName="cy" values="200;180;200" dur="3s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="50" cy="350" r="10" fill="#7C3AED" opacity="0.7">
-      <animate attributeName="cy" values="350;370;350" dur="2.5s" repeatCount="indefinite" />
-    </circle>
-    <circle cx="400" cy="500" r="12" fill="#4F46E5" opacity="0.7">
-      <animate attributeName="cy" values="500;520;500" dur="4s" repeatCount="indefinite" />
-    </circle>
   </svg>
 );
 
@@ -109,6 +99,43 @@ const TemplateSvg = () => (
   </svg>
 );
 
+// LCP (Largest Contentful Paint) içeriğinin süresini ölçmek için fonksiyon
+// sayfanın alt kısmında, useEffect içinde çağrılacak
+const measureLCP = () => {
+  if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+    try {
+      // LCP'yi ölçmek için PerformanceObserver kullan
+      const lcpObserver = new PerformanceObserver((entryList) => {
+        const entries = entryList.getEntries();
+        const lastEntry = entries[entries.length - 1];
+        if (lastEntry) {
+          // Konsola LCP süresini yazdır (geliştirme amaçlı)
+          console.debug('LCP:', lastEntry.startTime, 'Element:', lastEntry.element);
+          
+          // LCP süresini analitiklere gönder (opsiyonel)
+          if (window.gtag) {
+            window.gtag('event', 'web_vitals', {
+              eventCategory: 'Web Vitals',
+              eventAction: 'LCP',
+              eventValue: Math.round(lastEntry.startTime),
+              eventLabel: window.location.pathname,
+              nonInteraction: true,
+            });
+          }
+        }
+      });
+      
+      lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+      
+      return () => {
+        lcpObserver.disconnect();
+      };
+    } catch (e) {
+      console.error('LCP ölçümünde hata:', e);
+    }
+  }
+};
+
 export default function Home() {
   const router = useRouter();
   const { t } = useTranslation('common');
@@ -119,6 +146,22 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
+    
+    // LCP ölçümünü başlat
+    const lcpCleanup = measureLCP();
+    
+    // Sayfa yüklendiğinde en önemli görsel öğeleri zorunlu yükle
+    const heroImage = document.querySelector('.hero-svg');
+    if (heroImage) {
+      // Görüntüyü optimize et
+      heroImage.setAttribute('loading', 'eager');
+      heroImage.setAttribute('fetchpriority', 'high');
+    }
+    
+    return () => {
+      // LCP ölçümünü temizle
+      if (lcpCleanup) lcpCleanup();
+    };
   }, []);
 
   const features = [
@@ -227,6 +270,7 @@ export default function Home() {
           pb: { xs: 8, md: 12 },
           position: 'relative',
           overflow: 'hidden',
+          minHeight: {xs: '580px', md: '680px'}
         }}
       >
         <Container maxWidth="lg">
@@ -277,6 +321,7 @@ export default function Home() {
                     transform: 'scale(1.05)',
                     position: 'relative',
                     overflow: 'hidden',
+                    height: {xs: '120px', md: '120px'},
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -390,14 +435,19 @@ export default function Home() {
                 sx={{
                   position: 'relative',
                   zIndex: 1,
+                  width: '100%',
+                  height: {xs: '300px', md: '400px'},
                   transform: { xs: 'scale(0.9)', md: 'scale(1)' },
                   '&:hover': {
                     transform: { xs: 'scale(0.92)', md: 'scale(1.02)' },
                     transition: 'transform 0.3s ease-in-out',
                   },
                 }}
+                className="hero-container"
               >
-                <HeroSvg />
+                <div className="hero-svg" data-critical="true">
+                  <HeroSvg />
+                </div>
               </Box>
             </Grid>
           </Grid>
