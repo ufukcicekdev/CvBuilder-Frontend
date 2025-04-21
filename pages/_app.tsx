@@ -14,7 +14,6 @@ import Script from 'next/script';
 import Head from 'next/head';
 import { SessionProvider } from "next-auth/react";
 import { initializePerformanceOptimizations } from '../utils/performanceOptimization';
-import { optimizeCriticalLoad, onlyInProduction } from '../utils/jsBundleOptimizer';
 
 const cacheRtl = createCache({
   key: 'muirtl',
@@ -35,9 +34,6 @@ function MyApp({ Component, pageProps }: AppProps) {
     
     // Initialize performance optimizations
     initializePerformanceOptimizations();
-    
-    // Initialize JavaScript optimizations in production
-    onlyInProduction(optimizeCriticalLoad);
 
     // Register route change performance markers
     const handleRouteChangeStart = () => {
@@ -54,9 +50,6 @@ function MyApp({ Component, pageProps }: AppProps) {
           'routeChangeStart',
           'routeChangeComplete'
         );
-        
-        // Optimize JS on route change in production
-        onlyInProduction(optimizeCriticalLoad);
       }
     };
 
@@ -79,65 +72,20 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <title>CV Builder</title>
-        {/* Preload kritik kaynaklar */}
-        <link rel="preload" href="/images/hero-image.svg" as="image" type="image/svg+xml" />
       </Head>
       <SessionProvider session={pageProps.session}>
         <CacheProvider value={isRTL ? cacheRtl : cacheLtr}>
-          {/* Google Analytics - daha verimli hale getirildi */}
+          {/* Google Analytics */}
           <Script
             src="https://www.googletagmanager.com/gtag/js?id=G-HDJ50NB3XE"
             strategy="afterInteractive"
-            data-defer="true"
           />
-          <Script id="google-analytics" strategy="afterInteractive" data-defer="true">
+          <Script id="google-analytics" strategy="afterInteractive">
             {`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
-              gtag('config', 'G-HDJ50NB3XE', {
-                'send_page_view': false,
-                'transport_type': 'beacon',
-                'anonymize_ip': true
-              });
-              
-              // Optimize pageview sending - only after LCP completes
-              window.addEventListener('load', function() {
-                // Delay just enough to not interfere with LCP
-                setTimeout(() => {
-                  gtag('event', 'page_view', {
-                    page_title: document.title,
-                    page_location: window.location.href,
-                    page_path: window.location.pathname
-                  });
-                  
-                  // Remove js-loading class to restore transitions
-                  document.body.classList.remove('js-loading');
-                }, 500);
-              });
-            `}
-          </Script>
-          
-          {/* Script to optimize initial content load */}
-          <Script id="optimization-script" strategy="beforeInteractive">
-            {`
-              // Add js-loading class to disable transitions during load
-              document.documentElement.classList.add('js-loading');
-              
-              // Force eager loading of critical LCP elements
-              window.addEventListener('DOMContentLoaded', function() {
-                // Force immediate loading of any important image
-                const preloadImages = document.querySelectorAll('img[loading="lazy"][data-critical="true"]');
-                if (preloadImages.length) {
-                  for (let img of preloadImages) {
-                    img.loading = 'eager';
-                    // Set the src immediately if data-src is present
-                    if (img.dataset.src) {
-                      img.src = img.dataset.src;
-                    }
-                  }
-                }
-              });
+              gtag('config', 'G-HDJ50NB3XE');
             `}
           </Script>
           

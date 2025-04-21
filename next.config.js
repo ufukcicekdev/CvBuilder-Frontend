@@ -7,7 +7,6 @@ const nextConfig = {
   swcMinify: true,
   compiler: {
     emotion: true,
-    removeConsole: process.env.NODE_ENV === 'production',
   },
   
   // API isteklerini backend'e yönlendirmek için proxy ayarları
@@ -28,7 +27,6 @@ const nextConfig = {
   images: {
     domains: ['web-production-9f41e.up.railway.app', 'cekfisi.fra1.cdn.digitaloceanspaces.com'],
     formats: ['image/avif', 'image/webp'],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days for images
   },
   
   // HTTP Headers
@@ -53,30 +51,8 @@ const nextConfig = {
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN',
           },
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600, s-maxage=86400',
-          },
         ],
-      },
-      {
-        source: '/_next/static/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      {
-        source: '/images/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
+      }
     ];
   }
 };
