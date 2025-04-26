@@ -10,110 +10,187 @@ class MyDocument extends Document {
     return (
       <Html lang="tr">
         <Head>
-          {/* Meta - SSR ile erken yüklenmesi gerekli */}
+          {/* Character Set */}
           <meta charSet="utf-8" />
-          <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-          <meta name="theme-color" content="#4F46E5" />
-          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           
-          {/* Favicon - basit, inline SVG kullan */}
-          <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%234F46E5'/%3E%3Cpath d='M30 30H70V40H30zM30 50H70V60H30zM30 70H50V80H30z' fill='white'/%3E%3C/svg%3E" type="image/svg+xml" />
+          {/* Google Search Console Verification */}
+          <meta name="google-site-verification" content="_wjG1zyN1kIjuRjyx52ty9Cdpc_rwjXVuTLGvWbzAkg" />
           
-          {/* LCP kritik stiller için inline CSS */}
-          <style dangerouslySetInnerHTML={{ __html: `
-            body {
-              margin: 0;
-              padding: 0;
-              font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-              background-color: #f8f9fa;
-              -webkit-font-smoothing: antialiased;
-            }
-            
-            .hero-section {
-              background: #f5f7fa;
-              min-height: 600px;
-              position: relative;
-              padding: 48px 0;
-            }
-            
-            h1 {
-              color: #111827;
-              font-size: 3rem;
-              line-height: 1.2;
-              margin-bottom: 1rem;
-            }
-            
-            .critical-image {
-              width: 100%;
-              max-height: 400px;
-              height: auto;
-            }
-            
-            .main-content {
-              display: flex;
-              flex-direction: column;
-              flex: 1;
-              max-width: 100%;
-            }
-            
-            .loading {
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background-color: #f8f9fa;
-              z-index: 9999;
-              transition: opacity 0.2s;
-            }
-            
-            .loaded .loading {
-              display: none;
-              opacity: 0;
-            }
-          `}} />
+          {/* Favicon - Optimized loading */}
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+          <link rel="alternate icon" href="/favicon.ico" type="image/x-icon" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.svg" type="image/svg+xml" />
+          <link rel="manifest" href="/site.webmanifest" />
           
-          {/* Optimize edilmiş FOUC önleme scripti */}
-          <script dangerouslySetInnerHTML={{ __html: `
-            // Performans için optimizasyon - DOM yüklendiğinde çalışacak
-            document.addEventListener("DOMContentLoaded", function() {
-              requestAnimationFrame(() => {
-                document.documentElement.classList.add('loaded');
-              });
-            });
-            
-            // Yükleme zaman aşımı
-            setTimeout(function() {
-              document.documentElement.classList.add('loaded');
-            }, 1000);
-          `}} />
+          {/* Resource Hints - For high priority domains */}
+          <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+          <link rel="preconnect" href="https://web-production-9f41e.up.railway.app" crossOrigin="anonymous" />
+          <link rel="preconnect" href="https://cekfisi.fra1.cdn.digitaloceanspaces.com" crossOrigin="anonymous" />
           
-          {/* Font yüklemesi - performans için optimize edildi */}
+          {/* DNS Prefetch for third-party resources */}
+          <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+          <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+          <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+          <link rel="dns-prefetch" href="https://web-production-9f41e.up.railway.app" />
+          <link rel="dns-prefetch" href="https://cekfisi.fra1.cdn.digitaloceanspaces.com" />
+          
+          {/* Preload absolutely critical resources for index page */}
+          <link 
+            rel="preload" 
+            href="/hero-image.svg" 
+            as="image" 
+            type="image/svg+xml" 
+            fetchPriority="high" 
+          />
+          
+          {/* Make sure critical fonts are loaded early, but don't block rendering */}
           <link
             rel="preload"
             href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
             as="style"
           />
+          <link
+            href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+            rel="stylesheet"
+          />
+          
+          {/* Critical CSS - Optimized with only the most critical styles */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            /* Box sizing */
+            *, *::before, *::after {
+              box-sizing: border-box;
+            }
+            
+            /* Basic reset */
+            body {
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+              font-display: swap;
+              color: #1a202c;
+              background-color: #f8f9fa;
+            }
+            
+            /* Prevent layout shifts for key elements */
+            .hero-section {
+              min-height: 600px;
+              position: relative;
+              background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+              padding: 48px 0;
+              overflow: hidden;
+            }
+            
+            @media (max-width: 768px) {
+              .hero-section {
+                min-height: 800px;
+                padding: 32px 0;
+              }
+            }
+            
+            /* Hero image container */
+            .hero-image {
+              position: relative;
+              z-index: 1;
+            }
+            
+            /* Optimize loading experience */
+            .js-loading {
+              visibility: hidden;
+            }
+            
+            .js-loaded {
+              visibility: visible;
+              transition: 0.2s ease-in;
+            }
+            
+            /* Button styling for initial render */
+            .button {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              position: relative;
+              box-sizing: border-box;
+              min-width: 64px;
+              padding: 6px 16px;
+              border-radius: 4px;
+              color: rgba(0, 0, 0, 0.87);
+              font-size: 0.875rem;
+              font-weight: 500;
+              font-family: inherit;
+              line-height: 1.75;
+              transition: background-color 250ms ease;
+              cursor: pointer;
+            }
+            
+            .button-primary {
+              background-color: #4F46E5;
+              color: white;
+            }
+            
+            /* Prevent content from jumping */
+            main {
+              min-height: 600px;
+            }
+            
+            /* Set background for images to avoid layout shift */
+            img {
+              background-color: #f8f9fa;
+            }
+            
+            /* SVG optimization */
+            svg, .MuiSvgIcon-root, img[src$=".svg"] {
+              background-color: transparent !important;
+            }
+          `}} />
+          
+          {/* Script to remove no-JS flash and optimize first paint */}
           <script dangerouslySetInnerHTML={{ __html: `
             (function() {
-              var link = document.createElement('link');
-              link.rel = 'stylesheet';
-              link.href = 'https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap';
-              document.head.appendChild(link);
+              // Add js-loading class on initial load
+              document.documentElement.classList.add('js-loading');
+              
+              // Schedule immediate task to check if JS is running
+              setTimeout(function() {
+                document.documentElement.classList.remove('js-loading');
+                document.documentElement.classList.add('js-loaded');
+              }, 0);
+              
+              // Preload any images in viewport on load
+              window.addEventListener('load', function() {
+                // Find any images that should be preloaded
+                var heroImage = document.querySelector('.hero-image');
+                if (heroImage) {
+                  heroImage.style.visibility = 'visible';
+                }
+              });
+              
+              // Detect connection speed
+              if ('connection' in navigator) {
+                if (navigator.connection.saveData) {
+                  // Add save-data to minimize data usage
+                  document.documentElement.classList.add('save-data');
+                } else if (navigator.connection.effectiveType.includes('2g')) {
+                  // Add slow connection class
+                  document.documentElement.classList.add('slow-connection');
+                }
+              }
             })();
           `}} />
-          <noscript>
-            <link
-              href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
-              rel="stylesheet"
-            />
-          </noscript>
+          
+          {/* Meta tags that don't change between pages */}
+          <meta name="theme-color" content="#4F46E5" />
+          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+          <meta name="format-detection" content="telephone=no" />
+          
+          {/* Performance optimization headers */}
+          <meta httpEquiv="Cache-Control" content="public, max-age=31536000, immutable" />
+          <meta httpEquiv="Permissions-Policy" content="interest-cohort=()" />
         </Head>
         <body>
-          <div className="loading">Yükleniyor...</div>
           <Main />
           <NextScript />
         </body>

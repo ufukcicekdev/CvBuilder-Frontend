@@ -127,28 +127,22 @@ export default function Navbar() {
   return (
     <AppBar position="static">
       <Toolbar>
-        <Box
-          component="div"
-          role="heading"
-          aria-level={1}
-          sx={{ flexGrow: 1 }}
+        <Typography 
+          variant="h6" 
+          component={Link}
+          href="/"
+          sx={{ 
+            flexGrow: 1,
+            color: 'inherit',
+            textDecoration: 'none',
+            '&:hover': {
+              opacity: 0.8
+            },
+            cursor: 'pointer'
+          }}
         >
-          <Typography 
-            variant="h6" 
-            component={Link}
-            href="/"
-            sx={{ 
-              color: 'inherit',
-              textDecoration: 'none',
-              '&:hover': {
-                opacity: 0.8
-              },
-              cursor: 'pointer'
-            }}
-          >
-            {!mounted ? 'CV Builder' : t('app.name')}
-          </Typography>
-        </Box>
+          {!mounted ? 'CV Builder' : t('app.name')}
+        </Typography>
 
         {/* Desktop Menu */}
         {!isMobile && (
@@ -184,8 +178,6 @@ export default function Navbar() {
             <IconButton
               color="inherit"
               onClick={handleLangMenuClick}
-              aria-label={t('nav.selectLanguage')}
-              aria-haspopup="true"
             >
               <LanguageIcon />
             </IconButton>
@@ -200,8 +192,6 @@ export default function Navbar() {
               onClick={handleLangMenuClick}
               edge="end"
               sx={{ mr: 1 }}
-              aria-label={t('nav.selectLanguage')}
-              aria-haspopup="true"
             >
               <LanguageIcon />
             </IconButton>
@@ -209,8 +199,6 @@ export default function Navbar() {
               color="inherit"
               onClick={handleMobileMenuClick}
               edge="end"
-              aria-label={t('nav.menu')}
-              aria-haspopup="true"
             >
               <MenuIcon />
             </IconButton>

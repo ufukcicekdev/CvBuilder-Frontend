@@ -65,14 +65,14 @@ export default function Contact() {
             {t('contact.title')}
           </Typography>
           
-          <Typography variant="subtitle1" component="p" gutterBottom align="center" color="text.secondary">
+          <Typography variant="subtitle1" gutterBottom align="center" color="text.secondary">
             {t('contact.description')}
           </Typography>
 
           <Box sx={{ mt: 4, mb: 4, display: 'flex', flexDirection: { xs: 'column', md: 'row' }, justifyContent: 'space-around' }}>
             <Box sx={{ textAlign: 'center', mb: { xs: 3, md: 0 }, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <LocationOnIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h5" component="h2" gutterBottom>
+              <Typography variant="h6" gutterBottom>
                 {t('footer.address')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -88,11 +88,12 @@ export default function Contact() {
             
             <Box sx={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <PhoneIcon color="primary" sx={{ fontSize: 40, mb: 1 }} />
-              <Typography variant="h5" component="h2" gutterBottom>
+              <Typography variant="h6" gutterBottom>
                 {t('footer.phone')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
                 +90 (549) 517 06 19<br />
+        
               </Typography>
             </Box>
           </Box>

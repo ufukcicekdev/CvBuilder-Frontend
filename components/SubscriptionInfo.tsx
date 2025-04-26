@@ -254,7 +254,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ onSubscriptionChang
       <Card>
         <CardContent>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6" component="h2">
+            <Typography variant="h6">
               {t('pricing.currentSubscription')}
             </Typography>
             <Chip 
@@ -266,7 +266,7 @@ const SubscriptionInfo: React.FC<SubscriptionInfoProps> = ({ onSubscriptionChang
           
           <Divider sx={{ mb: 2 }} />
           
-          <Typography variant="subtitle1" component="h3" gutterBottom>
+          <Typography variant="subtitle1" gutterBottom>
             {subscription.plan && t(subscription.plan.name)}
           </Typography>
           

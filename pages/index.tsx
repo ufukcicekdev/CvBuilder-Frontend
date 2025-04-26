@@ -50,26 +50,50 @@ const HeroSvg = () => (
     xmlns="http://www.w3.org/2000/svg"
     aria-label="CV Builder Illustration"
     role="img"
-    className="critical-image"
-    style={{ maxHeight: '400px' }}
   >
     <title>CV Builder Illustration</title>
-    <desc>CV Builder logo</desc>
+    <desc>An illustration showing a CV document with various sections</desc>
+    <defs>
+      <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#4F46E5" stopOpacity="0.8"/>
+        <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.9"/>
+      </linearGradient>
+      <clipPath id="screenMask">
+        <rect x="110" y="70" width="580" height="380" rx="20" />
+      </clipPath>
+    </defs>
     
-    {/* Arka plan */}
-    <rect x="0" y="0" width="800" height="600" fill="#f5f7fa" />
+    {/* Background Elements */}
+    <circle cx="650" cy="120" r="80" fill="url(#gradient1)" opacity="0.1" />
+    <circle cx="150" cy="500" r="100" fill="url(#gradient1)" opacity="0.1" />
+    <circle cx="400" cy="300" r="150" fill="url(#gradient1)" opacity="0.05" />
     
-    {/* CV Document - Çok daha basit render */}
+    {/* CV Document */}
     <rect x="110" y="70" width="580" height="380" rx="20" fill="#FFFFFF" stroke="#E5E7EB" strokeWidth="2" />
     
-    {/* Basit içerik blokları */}
-    <rect x="130" y="100" width="300" height="30" rx="6" fill="#4F46E5" />
-    <rect x="130" y="150" width="540" height="20" rx="5" fill="#E5E7EB" />
-    <rect x="130" y="190" width="540" height="20" rx="5" fill="#E5E7EB" />
-    <rect x="130" y="230" width="540" height="20" rx="5" fill="#E5E7EB" />
-    <rect x="130" y="300" width="200" height="30" rx="6" fill="#4F46E5" />
-    <rect x="130" y="350" width="540" height="20" rx="5" fill="#E5E7EB" />
-    <rect x="130" y="390" width="540" height="20" rx="5" fill="#E5E7EB" />
+    {/* CV Content */}
+    <g clipPath="url(#screenMask)">
+      {/* Header */}
+      <rect x="110" y="70" width="580" height="80" fill="#F9FAFB" />
+      <circle cx="170" cy="110" r="30" fill="#4F46E5" />
+      <rect x="220" y="95" width="200" height="12" rx="6" fill="#111827" />
+      <rect x="220" y="115" width="150" height="10" rx="5" fill="#6B7280" />
+      
+      {/* Content */}
+      <rect x="130" y="170" width="200" height="15" rx="7" fill="#4F46E5" />
+      <rect x="130" y="195" width="540" height="10" rx="5" fill="#E5E7EB" />
+      <rect x="130" y="215" width="540" height="10" rx="5" fill="#E5E7EB" />
+      <rect x="130" y="235" width="540" height="10" rx="5" fill="#E5E7EB" />
+      
+      <rect x="130" y="270" width="200" height="15" rx="7" fill="#4F46E5" />
+      <rect x="130" y="295" width="540" height="10" rx="5" fill="#E5E7EB" />
+      <rect x="130" y="315" width="540" height="10" rx="5" fill="#E5E7EB" />
+      <rect x="130" y="335" width="540" height="10" rx="5" fill="#E5E7EB" />
+      
+      <rect x="130" y="370" width="200" height="15" rx="7" fill="#4F46E5" />
+      <rect x="130" y="395" width="540" height="10" rx="5" fill="#E5E7EB" />
+      <rect x="130" y="415" width="540" height="10" rx="5" fill="#E5E7EB" />
+    </g>
   </svg>
 );
 
@@ -82,18 +106,20 @@ const TemplateSvg = () => (
     xmlns="http://www.w3.org/2000/svg"
     aria-label="CV Template Example"
     role="img"
-    className="critical-image"
   >
     <title>CV Template Example</title>
-    <desc>A simplified illustration of a CV template</desc>
+    <desc>A simplified illustration of a CV template design</desc>
     <rect width="400" height="300" fill="#F9FAFB" rx="8" />
-    <rect x="20" y="20" width="100" height="20" rx="4" fill="#4F46E5" />
+    <rect x="20" y="20" width="100" height="100" rx="50" fill="#4F46E5" />
     <rect x="140" y="30" width="240" height="20" rx="4" fill="#111827" />
-    <rect x="20" y="60" width="360" height="10" rx="4" fill="#E5E7EB" />
-    <rect x="20" y="80" width="360" height="10" rx="4" fill="#E5E7EB" />
-    <rect x="20" y="110" width="150" height="15" rx="4" fill="#4F46E5" />
-    <rect x="20" y="135" width="360" height="10" rx="4" fill="#E5E7EB" />
-    <rect x="20" y="155" width="360" height="10" rx="4" fill="#E5E7EB" />
+    <rect x="140" y="60" width="180" height="15" rx="4" fill="#6B7280" />
+    <rect x="140" y="85" width="220" height="15" rx="4" fill="#6B7280" />
+    <rect x="20" y="140" width="360" height="1" fill="#E5E7EB" />
+    <rect x="20" y="160" width="150" height="15" rx="4" fill="#4F46E5" />
+    <rect x="20" y="185" width="360" height="10" rx="4" fill="#E5E7EB" />
+    <rect x="20" y="205" width="360" height="10" rx="4" fill="#E5E7EB" />
+    <rect x="20" y="225" width="360" height="10" rx="4" fill="#E5E7EB" />
+    <rect x="20" y="245" width="180" height="10" rx="4" fill="#E5E7EB" />
   </svg>
 );
 
@@ -133,34 +159,6 @@ export default function Home() {
 
   useEffect(() => {
     setMounted(true);
-    
-    // LCP elemanlarını hemen optimize et
-    if (typeof window !== 'undefined') {
-      // Ana başlık ve hero SVG'yi bulmaya çalış
-      const h1Element = document.querySelector('h1');
-      const heroContainer = document.querySelector('.hero-section');
-      
-      // LCP elemanı olarak ana başlık olabilir - 
-      if (h1Element) {
-        // Ana başlık için özel stil - hızlı yükleme
-        h1Element.style.visibility = 'visible';
-        h1Element.style.display = 'block';
-        h1Element.setAttribute('fetchpriority', 'high');
-      }
-      
-      // Başlık bölümüne ve hero container'ına anında display uygula
-      if (heroContainer) {
-        heroContainer.setAttribute('fetchpriority', 'high');
-        heroContainer.setAttribute('importance', 'high');
-        (heroContainer as HTMLElement).style.display = 'block';
-      }
-      
-      // SVG optimize et ve satır içi hale getir - önemli
-      document.querySelectorAll('svg.critical-image').forEach(svg => {
-        svg.setAttribute('fetchpriority', 'high');
-        svg.setAttribute('loading', 'eager');
-      });
-    }
     
     // Start LCP measurement
     measureLCP();
@@ -278,31 +276,25 @@ export default function Home() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
               <Box>
-                <Typography variant="overline" color="primary" sx={{ letterSpacing: 1, fontWeight: 500 }}>
-                  {t('home.hero.intro')}
-                </Typography>
-                <Typography 
-                  variant="h2" 
+                <Typography
+                  id="hero-heading"
                   component="h1"
-                  sx={{ 
-                    fontWeight: 800, 
-                    mt: 2, 
-                    mb: 3,
-                    fontSize: { xs: '2.5rem', md: '3.5rem' } 
+                  variant="h2"
+                  color="text.primary"
+                  gutterBottom
+                  sx={{
+                    fontWeight: 800,
+                    lineHeight: 1.2,
+                    fontSize: { xs: '2.5rem', md: '3.5rem' },
                   }}
                 >
                   {t('home.hero.title')}
                 </Typography>
-                <Typography 
-                  variant="h5" 
-                  component="h2"
-                  color="text.secondary" 
-                  sx={{ 
-                    maxWidth: 600, 
-                    mx: 'auto',
-                    lineHeight: 1.5,
-                    fontWeight: 400 
-                  }}
+                <Typography
+                  variant="h5"
+                  color="text.secondary"
+                  paragraph
+                  sx={{ mb: 4, maxWidth: '90%' }}
                 >
                   {t('home.hero.subtitle')}
                 </Typography>
@@ -350,7 +342,6 @@ export default function Home() {
                   </Typography>
                   <Typography 
                     variant="subtitle1" 
-                    component="p"
                     sx={{
                       mt: 1,
                       position: 'relative',
@@ -481,8 +472,7 @@ export default function Home() {
               {t('home.features.title')}
             </Typography>
             <Typography
-              variant="subtitle1"
-              component="p"
+              variant="h6"
               color="text.secondary"
               sx={{ maxWidth: '800px', mx: 'auto' }}
             >
@@ -520,10 +510,10 @@ export default function Home() {
             aria-label={t('subscription.freeTrialText')}
           >
             <Box sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
                 {t('subscription.freeTrialText')}
               </Typography>
-              <Typography variant="body1" component="p" sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 3 }}>
                 {t('subscription.freeTrialDescription')}
               </Typography>
 
@@ -531,7 +521,7 @@ export default function Home() {
                 <Grid item xs={12} sm={4}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <CheckCircleIcon sx={{ fontSize: 40, mb: 1 }} />
-                    <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                       {t('home.hero.feature1')}
                     </Typography>
                   </Box>
@@ -539,7 +529,7 @@ export default function Home() {
                 <Grid item xs={12} sm={4}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <CheckCircleIcon sx={{ fontSize: 40, mb: 1 }} />
-                    <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                       {t('home.hero.feature2')}
                     </Typography>
                   </Box>
@@ -547,7 +537,7 @@ export default function Home() {
                 <Grid item xs={12} sm={4}>
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     <CheckCircleIcon sx={{ fontSize: 40, mb: 1 }} />
-                    <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 'bold' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
                       {t('home.hero.feature3')}
                     </Typography>
                   </Box>
@@ -641,8 +631,7 @@ export default function Home() {
               {t('home.templates.title')}
             </Typography>
             <Typography
-              variant="subtitle1"
-              component="p"
+              variant="h6"
               color="text.secondary"
               sx={{ maxWidth: '800px', mx: 'auto' }}
             >
@@ -791,8 +780,7 @@ export default function Home() {
               {t('home.testimonials.title')}
             </Typography>
             <Typography
-              variant="subtitle1"
-              component="p"
+              variant="h6"
               color="text.secondary"
               sx={{ maxWidth: '800px', mx: 'auto' }}
             >
@@ -840,7 +828,7 @@ export default function Home() {
                         {testimonial.name.charAt(0)}
                       </Avatar>
                       <Box>
-                        <Typography variant="body1" component="span" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                           {testimonial.name}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
@@ -870,7 +858,7 @@ export default function Home() {
                   >
                     {stat.value}
                   </Typography>
-                  <Typography variant="subtitle1" component="p" sx={{ opacity: 0.9 }}>
+                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
                     {t(`home.stats.${stat.key}`)}
                   </Typography>
                 </Box>
@@ -903,8 +891,7 @@ export default function Home() {
                 {t('home.cta.title')}
               </Typography>
               <Typography
-                variant="subtitle1"
-                component="p"
+                variant="h6"
                 align="center"
                 sx={{ color: 'white', opacity: 0.9, mb: 4 }}
               >

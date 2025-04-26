@@ -612,7 +612,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({
             </TabPanel>
             
             <TabPanel value={activeTab} index={2}>
-              <Typography variant="h6" component="h3" gutterBottom>{t('cv.template.typographySettings')}</Typography>
+              <Typography variant="h6" gutterBottom>{t('cv.template.typographySettings')}</Typography>
               
               <FormControl fullWidth margin="normal">
                 <InputLabel>{t('cv.template.fontFamily')}</InputLabel>
@@ -645,7 +645,7 @@ const TemplateBuilder: React.FC<TemplateBuilderProps> = ({
               <Divider sx={{ my: 2 }} />
               
               {/* Section level typography settings */}
-              <Typography variant="h6" component="h3" gutterBottom>{t('cv.template.sectionTypography')}</Typography>
+              <Typography variant="h6" gutterBottom>{t('cv.template.sectionTypography')}</Typography>
               
               {templateData.sections.map(section => (
                 <Paper key={section.id} sx={{ p: 2, mb: 1 }}>

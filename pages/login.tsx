@@ -244,11 +244,10 @@ export default function LoginPage() {
         description={t('login.seo.description', 'Log in to your CV Builder account to create, edit, and manage your professional resumes and CVs.')}
         keywords={t('login.seo.keywords', 'login, sign in, cv builder account, resume access')}
         ogType="website"
-        canonicalUrl={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://cvbuilder.tech'}/login`}
       />
       <Container component="main" maxWidth="xs">
         <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography component="h1" variant="h4">
+          <Typography component="h1" variant="h5">
             {t('auth.login')}
           </Typography>
 
@@ -366,7 +365,7 @@ export default function LoginPage() {
           {userType === 'jobseeker' && (
             <>
               <Divider sx={{ width: '100%', my: 2 }}>
-                <Typography variant="body2" color="textSecondary">
+                <Typography color="textSecondary">
                   {t('auth.orLoginWith')}
                 </Typography>
               </Divider>

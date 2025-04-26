@@ -57,7 +57,7 @@ export default function Header() {
       <Toolbar>
         <Typography
           variant="h6"
-          component="h1"
+          component="div"
           sx={{ flexGrow: 1 }}
         >
           <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -90,8 +90,6 @@ export default function Header() {
               onClick={handleMenu}
               color="inherit"
               edge="end"
-              aria-label={t('user.profile')}
-              aria-haspopup="true"
             >
               {user?.email ? (
                 <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
