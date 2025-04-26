@@ -19,7 +19,7 @@ export default function TermsOfService() {
             {t('terms.title')}
           </Typography>
           
-          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+          <Typography variant="subtitle1" component="p" color="text.secondary" gutterBottom>
             {t('terms.lastUpdated')}: {t('terms.lastUpdatedDate')}
           </Typography>
           

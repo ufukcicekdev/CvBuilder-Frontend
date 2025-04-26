@@ -1,4 +1,7 @@
 const { i18n } = require('./next-i18next.config');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -39,33 +42,55 @@ const nextConfig = {
   
   // HTTP Headers with cache optimizations
   async headers() {
+    // Determine if we're in production
+    const isProduction = process.env.NODE_ENV === 'production';
+    
+    // Define headers based on environment
+    const securityHeaders = isProduction ? [
+      {
+        key: 'X-XSS-Protection',
+        value: '1; mode=block',
+      },
+      {
+        key: 'X-Content-Type-Options',
+        value: 'nosniff',
+      },
+      {
+        key: 'Referrer-Policy',
+        value: 'strict-origin-when-cross-origin',
+      },
+      {
+        key: 'Strict-Transport-Security',
+        value: 'max-age=63072000; includeSubDomains; preload',
+      }
+    ] : [];
+    
     return [
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'Referrer-Policy',
-            value: 'strict-origin-when-cross-origin',
-          },
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN',
-          },
+          ...securityHeaders,
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
+          }
+        ],
+      },
+      // WebSocket sayfaları için önbellekleme devre dışı bırakılır
+      {
+        source: '/templates/:path*',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-store, must-revalidate',
           },
           {
-            key: 'Priority',
-            value: 'high'
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
           }
         ],
       },
@@ -148,43 +173,24 @@ const nextConfig = {
   },
   
   // Webpack optimizasyonları
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev, isServer, webpack }) => {
     // Only run in production client-side build
     if (!dev && !isServer) {
-      // Optimize for production
-      config.optimization = {
-        ...config.optimization,
-        minimize: true,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            defaultVendors: {
-              test: /[\\/]node_modules[\\/]/,
-              priority: -10,
-              reuseExistingChunk: true,
-            },
-            default: {
-              minChunks: 2,
-              priority: -20,
-              reuseExistingChunk: true,
-            },
-            framework: {
-              name: 'framework',
-              test: /[\\/]node_modules[\\/](react|react-dom|@mui)[\\/]/,
-              priority: 40,
-              chunks: 'all',
-              enforce: true,
-            },
-            commons: {
-              name: 'commons',
-              minChunks: 3,
-              priority: 30,
-              chunks: 'all',
-              reuseExistingChunk: true,
-            }
-          },
-        },
-      };
+      // Disable source maps in production for better performance
+      config.devtool = false;
+
+      // JavaScript yüklemesini hızlandırmak için
+      config.optimization.moduleIds = 'deterministic';
+      
+      // Agresif tree shaking ve LCP/TTI optimizasyonları
+      config.plugins.push(
+        new webpack.DefinePlugin({
+          'process.env.__NEXT_OPTIMIZE_CSS': JSON.stringify(true),
+        })
+      );
+    } else if (dev) {
+      // Development'ta daha hafif bir source map kullan
+      config.devtool = 'cheap-module-source-map';
     }
     
     return config;
@@ -194,10 +200,15 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     scrollRestoration: true,
-    workerThreads: true,
+    optimizePackageImports: [
+      '@mui/material',
+      '@mui/icons-material' 
+    ],
   },
   
-  productionBrowserSourceMaps: false, // Disable source maps in production for better performance
+  // Disable source maps in production for better performance
+  productionBrowserSourceMaps: false,
+  generateEtags: true, // Enable ETag generation
 };
 
-module.exports = nextConfig;
+module.exports = withBundleAnalyzer(nextConfig);

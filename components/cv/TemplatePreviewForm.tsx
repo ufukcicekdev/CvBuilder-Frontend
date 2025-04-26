@@ -851,22 +851,26 @@ const TemplatePreviewForm = ({ cvId, onPrev, onStepComplete, initialData, isLoad
         
         try {
           // PDF'i oluştur
-          const success = await pdfService.generatePdf({
-            element: element,
-            filename: `${selectedCustomTemplate.name || 'cv'}.pdf`,
-            margin: [20, 20, 20, 20],
-            orientation: 'portrait',
-            scale: 2,
-            singlePage: false
-          });
+          await pdfService.generatePdf(
+            element,
+            {
+              filename: `${selectedCustomTemplate.name || 'cv'}.pdf`,
+              margin: {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 20
+              },
+              jsPdfOptions: {
+                orientation: 'portrait'
+              },
+              scale: 2
+            }
+          );
           
-          if (success) {
-            toast.success(t('cv.preview.downloadSuccess', 'PDF başarıyla indirildi'));
-            return { success: true };
-          } else {
-            toast.error(t('cv.preview.pdfError', 'PDF oluşturulurken bir hata oluştu'));
-            return { success: false, error: 'PDF generation failed' };
-          }
+          // Eğer buraya kadar geldiyse başarılı demektir
+          toast.success(t('cv.preview.downloadSuccess', 'PDF başarıyla indirildi'));
+          return { success: true };
         } catch (error) {
           console.error('PDF generation error:', error);
           toast.error(t('cv.preview.pdfError', 'PDF oluşturma hatası: ' + (error instanceof Error ? error.message : 'Bilinmeyen hata')));
@@ -1863,29 +1867,39 @@ const TemplatePreviewForm = ({ cvId, onPrev, onStepComplete, initialData, isLoad
                                         const fileName = `${template.name || 'CV'}-${new Date().toISOString().substring(0, 10)}.pdf`;
                                         
                                         // PDF oluştur - tek sayfa olarak
-                                        const success = await pdfService.generatePdf({
-                                          element: customTemplateElement as HTMLElement,
-                                          filename: fileName,
-                                          margin: [3, 3, 3, 3],  // Kenar boşluklarını azalt
-                                          orientation: 'portrait',
-                                          scale: 3, // Daha yüksek çözünürlük için scale değeri artırıldı
-                                          singlePage: true // Her zaman tek sayfa olarak oluştur
-                                        });
-                                        
-                                        // Toast mesajını güncelle
-                                        toast.dismiss(toastId);
-                                        
-                                        if (success) {
-                                          // console.log('PDF başarıyla oluşturuldu');
+                                        try {
+                                          await pdfService.generatePdf(
+                                            customTemplateElement as HTMLElement,
+                                            {
+                                              filename: fileName,
+                                              margin: {
+                                                top: 3,
+                                                right: 3,
+                                                bottom: 3,
+                                                left: 3
+                                              },
+                                              jsPdfOptions: {
+                                                orientation: 'portrait'
+                                              },
+                                              scale: 3, // Daha yüksek çözünürlük için scale değeri artırıldı
+                                              html2canvasOptions: {
+                                                scale: 3
+                                              }
+                                            }
+                                          );
+                                          
+                                          // Toast mesajını güncelle
+                                          toast.dismiss(toastId);
                                           toast.success('PDF başarıyla indirildi');
-                                        } else {
-                                          console.error('PDF oluşturulamadı');
-                                          toast.error('PDF oluşturulurken bir hata oluştu');
+                                        } catch (innerError) {
+                                          console.error('PDF oluşturma iç hatası:', innerError);
+                                          toast.dismiss(toastId);
+                                          toast.error(`PDF oluşturma hatası: ${innerError instanceof Error ? innerError.message : 'Bilinmeyen hata'}`);
                                         }
-                                      } catch (innerError) {
-                                        console.error('PDF oluşturma iç hatası:', innerError);
+                                      } catch (error) {
+                                        console.error('PDF oluşturma hatası:', error);
                                         toast.dismiss(toastId);
-                                        toast.error(`PDF oluşturma hatası: ${innerError instanceof Error ? innerError.message : 'Bilinmeyen hata'}`);
+                                        toast.error(`PDF oluşturma hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`);
                                       }
                                     }, 1000); // Elementin tam olarak render edilmesi için 1 saniye bekle
                                   } catch (error) {

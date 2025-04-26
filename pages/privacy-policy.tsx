@@ -13,24 +13,21 @@ export default function PrivacyPolicy() {
         <title>{t('privacy.pageTitle')}</title>
         <meta name="description" content={t('privacy.pageDescription')} />
       </Head>
-      <Container maxWidth="lg" sx={{ py: 6 }}>
-        <Paper elevation={2} sx={{ p: { xs: 3, md: 6 } }}>
-          <Typography variant="h3" component="h1" gutterBottom>
+      <Container maxWidth="md">
+        <Paper sx={{ p: 4, my: 4 }}>
+          <Typography variant="h4" component="h1" gutterBottom>
             {t('privacy.title')}
           </Typography>
+          <Typography variant="body1" paragraph>
+            {t('privacy.lastUpdated')}: {t('privacy.updateDate')}
+          </Typography>
           
-          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            {t('privacy.lastUpdated')}: {t('privacy.lastUpdatedDate')}
+          <Typography variant="body1" paragraph>
+            {t('privacy.intro')}
           </Typography>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="body1" paragraph>
-              {t('privacy.introduction')}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.dataCollection.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -39,13 +36,13 @@ export default function PrivacyPolicy() {
             <Typography variant="body1" component="ul" sx={{ pl: 4 }}>
               <li>{t('privacy.dataCollection.personalInfo')}</li>
               <li>{t('privacy.dataCollection.profileInfo')}</li>
-              <li>{t('privacy.dataCollection.resumeData')}</li>
-              <li>{t('privacy.dataCollection.usageInfo')}</li>
+              <li>{t('privacy.dataCollection.usage')}</li>
+              <li>{t('privacy.dataCollection.technical')}</li>
             </Typography>
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.dataUsage.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -60,7 +57,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.dataSharing.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -74,7 +71,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.dataSecurity.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -83,7 +80,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.dataRetention.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -92,7 +89,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.userRights.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -108,7 +105,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.cookies.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -117,7 +114,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.thirdParty.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -126,7 +123,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.children.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -135,7 +132,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.changes.title')}
             </Typography>
             <Typography variant="body1" paragraph>
@@ -144,7 +141,7 @@ export default function PrivacyPolicy() {
           </Box>
           
           <Box sx={{ my: 4 }}>
-            <Typography variant="h5" gutterBottom>
+            <Typography variant="h5" component="h2" gutterBottom>
               {t('privacy.contact.title')}
             </Typography>
             <Typography variant="body1" paragraph>

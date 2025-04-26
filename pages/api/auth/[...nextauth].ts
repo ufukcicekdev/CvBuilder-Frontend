@@ -1,8 +1,5 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { JWT } from 'next-auth/jwt';
 
 // NextAuth uyarılarını gidermek için
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
@@ -47,7 +44,7 @@ export const authOptions: NextAuthOptions = {
         try {
           // API URL'yi doğrudan .env dosyasından alıyoruz
           // console.log('Using API URL:', process.env.NEXT_PUBLIC_API_URL);
-          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://web-production-9f41e.up.railway.app';
           const response = await fetch(`${apiUrl}/api/auth/login/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -103,32 +100,8 @@ export const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 24 * 60 * 60, // 24 saat
   },
-  debug: true, // Her zaman debug modunu etkinleştir
+  debug: process.env.NODE_ENV === 'development', // Development modunda debug etkinleştir
   secret: NEXTAUTH_SECRET,
 };
 
-export default NextAuth(authOptions);
-
-// Session update handler
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
-  }
-
-  try {
-    const { accessToken, refreshToken } = JSON.parse(req.body);
-    
-    // Session'ı güncelle
-    const session = await getSession({ req });
-    if (session) {
-      session.accessToken = accessToken;
-      session.refreshToken = refreshToken;
-      await res.json(session);
-    } else {
-      res.status(401).json({ message: 'No session found' });
-    }
-  } catch (error) {
-    console.error('Session update error:', error);
-    res.status(500).json({ message: 'Error updating session' });
-  }
-} 
+export default NextAuth(authOptions); 

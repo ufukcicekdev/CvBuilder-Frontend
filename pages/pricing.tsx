@@ -36,6 +36,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
 import { useRouter } from 'next/router';
 import axiosInstance from '../services/axios';
+import SEO from '../components/SEO';
+import { motion } from 'framer-motion';
 
 export default function Pricing() {
   const { t } = useTranslation('common');
@@ -124,7 +126,7 @@ export default function Pricing() {
             token: process.env.NEXT_PUBLIC_PADDLE_TOKEN,
             checkout: {
               settings: {
-                locale: localStorage.getItem('selectedLanguage')
+                locale: localStorage.getItem('selectedLanguage') || 'tr'
               }
             },
             eventCallback: function(eventData: any) {
@@ -310,184 +312,209 @@ export default function Pricing() {
   const hasActiveSubscription = currentSubscription && currentSubscription.status === 'active';
 
   return (
-    <Layout>
-      <Head>
-        <title>{t('pricing.pageTitle')}</title>
-        <meta name="description" content={t('pricing.pageDescription')} />
-      </Head>
-      <Container maxWidth="lg" sx={{ py: 8 }}>
-        <Typography variant="h2" component="h1" align="center" gutterBottom>
-          {t('pricing.title')}
-        </Typography>
-        <Typography variant="h6" align="center" color="text.secondary" paragraph>
-          {t('pricing.description')}
-        </Typography>
+    <>
+      <SEO
+        title={t('pricing.seo.title', 'Resume Builder Pricing Plans')}
+        description={t('pricing.seo.description', 'Choose the perfect CV Builder plan that fits your needs. From free basic options to premium features for the professional job seeker.')}
+        keywords={t('pricing.seo.keywords', 'cv builder pricing, resume pricing, cv subscription, resume builder plans')}
+        ogType="website"
+        canonicalUrl={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://cvbuilder.tech'}/pricing`}
+      />
 
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-          <Card 
-            elevation={3}
-            sx={{
-              width: { xs: '100%', md: 350 },
-              display: 'flex',
-              flexDirection: 'column',
-              transition: 'transform 0.2s',
-              '&:hover': {
-                transform: 'translateY(-8px)',
-              },
-              border: isCurrentPlan ? `2px solid ${theme.palette.primary.main}` : 'none',
-            }}
+      <Layout>
+        <Head>
+          <title>{t('pricing.pageTitle')}</title>
+          <meta name="description" content={t('pricing.pageDescription')} />
+        </Head>
+        <Container maxWidth="lg" sx={{ position: 'relative', overflow: 'hidden' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <CardContent sx={{ flexGrow: 1, p: 4 }}>
-              <Typography variant="h5" component="h3" gutterBottom align="center">
-                {t(plan.name)}
+            <Box textAlign="center" py={4}>
+              <Typography component="h1" variant="h3" gutterBottom>
+                {t('pricing.title')}
               </Typography>
-              
-              <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
-                {t(plan.description || '')}
+              <Typography component="h2" variant="h6" color="textSecondary" maxWidth="md" mx="auto">
+                {t('pricing.subtitle')}
               </Typography>
-              
-              <Box sx={{ my: 3, textAlign: 'center' }}>
-                <Typography variant="h3" component="div" color="primary">
-                  {currency}{price}
-                </Typography>
-                <Typography variant="subtitle1" color="text.secondary">
-                  {t('pricing.perMonth')}
+
+              {/* Plan Selection Toggle */}
+              <Box mt={4} display="flex" justifyContent="center" alignItems="center">
+                <Typography component="span" variant="body1">
+                  {t('pricing.monthly')}
                 </Typography>
               </Box>
+            </Box>
+          </motion.div>
 
-              <List>
-                {orderedFeatureKeys.map((key) => {
-                  const included = plan.features[key] || false;
-                  return (
-                    <ListItem key={key} sx={{ py: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        {included ? (
-                          <CheckIcon color="primary" />
-                        ) : (
-                          <CloseIcon color="error" />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={t(`pricing.features.${key}`)} 
-                        primaryTypographyProps={{
-                          color: included ? 'textPrimary' : 'textSecondary',
-                        }}
-                      />
-                    </ListItem>
-                  );
-                })}
-              </List>
-
-              <Box sx={{ mt: 4, textAlign: 'center' }}>
-                {hasActiveSubscription ? (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    fullWidth
-                    disabled
-                  >
-                    {isCurrentPlan ? t('pricing.currentPlan') : t('pricing.alreadySubscribed', 'Zaten Aboneliğiniz Var')}
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    size="large"
-                    fullWidth
-                    color="primary"
-                    onClick={handlePlanSelect}
-                  >
-                    {t('pricing.selectPlan')}
-                  </Button>
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-        
-        {/* Ödeme Sağlayıcısı Dialog */}
-        <Dialog 
-          open={showGatewayDialog} 
-          onClose={() => setShowGatewayDialog(false)}
-          maxWidth="xs"
-          fullWidth
-        >
-          <DialogTitle>{t('pricing.selectPaymentMethod')}</DialogTitle>
-          <DialogContent>
-            {paymentGateways.length === 0 ? (
-              <Typography color="error">
-                No payment gateways available! Check console for details.
-              </Typography>
-            ) : (
-              <FormControl component="fieldset" fullWidth sx={{ mt: 2 }}>
-                <RadioGroup
-                  value={selectedGateway}
-                  onChange={(e) => setSelectedGateway(e.target.value)}
-                >
-                  {paymentGateways.map((gateway) => (
-                    <FormControlLabel
-                      key={gateway.id}
-                      value={gateway.gateway_type}
-                      control={<Radio />}
-                      label={gateway.name}
-                      disabled={!gateway.is_active}
-                    />
-                  ))}
-                </RadioGroup>
-              </FormControl>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowGatewayDialog(false)}>
-              {t('common.cancel')}
-            </Button>
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={handleGatewaySelect}
-              disabled={!selectedGateway}
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+            <Card 
+              elevation={3}
+              sx={{
+                width: { xs: '100%', md: 350 },
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                },
+                border: isCurrentPlan ? `2px solid ${theme.palette.primary.main}` : 'none',
+              }}
             >
-              {t('common.next')}
-            </Button>
-          </DialogActions>
-        </Dialog>
+              <CardContent sx={{ flexGrow: 1, p: 4 }}>
+                <Typography variant="h5" component="h2" gutterBottom align="center">
+                  {t(plan.name)}
+                </Typography>
+                
+                <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 2 }}>
+                  {t(plan.description || '')}
+                </Typography>
+                
+                <Box sx={{ my: 3, textAlign: 'center' }}>
+                  <Typography variant="h3" component="p" color="primary">
+                    {currency}{price}
+                  </Typography>
+                  <Typography variant="subtitle1" component="p" color="text.secondary">
+                    {t('pricing.perMonth')}
+                  </Typography>
+                </Box>
 
-        {/* PayTR iframe Modal */}
-        {showPaytrModal && paytrIframeUrl && (
+                <List>
+                  {orderedFeatureKeys.map((key) => {
+                    const included = plan.features[key] || false;
+                    return (
+                      <ListItem key={key} sx={{ py: 1 }}>
+                        <ListItemIcon sx={{ minWidth: 36 }}>
+                          {included ? (
+                            <CheckIcon color="primary" />
+                          ) : (
+                            <CloseIcon color="error" />
+                          )}
+                        </ListItemIcon>
+                        <ListItemText 
+                          primary={t(`pricing.features.${key}`)} 
+                          primaryTypographyProps={{
+                            color: included ? 'textPrimary' : 'textSecondary',
+                          }}
+                        />
+                      </ListItem>
+                    );
+                  })}
+                </List>
+
+                <Box sx={{ mt: 4, textAlign: 'center' }}>
+                  {hasActiveSubscription ? (
+                    <Button
+                      variant="outlined"
+                      size="large"
+                      fullWidth
+                      disabled
+                    >
+                      {isCurrentPlan ? t('pricing.currentPlan') : t('pricing.alreadySubscribed', 'Zaten Aboneliğiniz Var')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      color="primary"
+                      onClick={handlePlanSelect}
+                    >
+                      {t('pricing.selectPlan')}
+                    </Button>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+          
+          {/* Ödeme Sağlayıcısı Dialog */}
           <Dialog 
-            open={showPaytrModal} 
-            fullScreen
-            onClose={() => setShowPaytrModal(false)}
+            open={showGatewayDialog} 
+            onClose={() => setShowGatewayDialog(false)}
+            maxWidth="xs"
+            fullWidth
           >
-            <DialogTitle>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="h6">Ödeme Sayfası</Typography>
-                <Button 
-                  variant="outlined" 
-                  onClick={() => {
-                    setShowPaytrModal(false);
-                    router.push('/profile');
-                  }}
-                >
-                  Kapat
-                </Button>
-              </Box>
-            </DialogTitle>
-            <DialogContent sx={{ padding: 0 }}>
-              <Box component="iframe" 
-                src={paytrIframeUrl} 
-                sx={{ 
-                  width: '100%', 
-                  height: 'calc(100vh - 100px)', 
-                  border: 'none', 
-                  overflow: 'hidden' 
-                }}
-                id="paytriframe"
-              />
+            <DialogTitle>{t('pricing.selectPaymentMethod')}</DialogTitle>
+            <DialogContent>
+              {paymentGateways.length === 0 ? (
+                <Typography color="error">
+                  No payment gateways available! Check console for details.
+                </Typography>
+              ) : (
+                <FormControl component="fieldset" fullWidth sx={{ mt: 2 }}>
+                  <RadioGroup
+                    value={selectedGateway}
+                    onChange={(e) => setSelectedGateway(e.target.value)}
+                  >
+                    {paymentGateways.map((gateway) => (
+                      <FormControlLabel
+                        key={gateway.id}
+                        value={gateway.gateway_type}
+                        control={<Radio />}
+                        label={gateway.name}
+                        disabled={!gateway.is_active}
+                      />
+                    ))}
+                  </RadioGroup>
+                </FormControl>
+              )}
             </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowGatewayDialog(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={handleGatewaySelect}
+                disabled={!selectedGateway}
+              >
+                {t('common.next')}
+              </Button>
+            </DialogActions>
           </Dialog>
-        )}
-      </Container>
-    </Layout>
+
+          {/* PayTR iframe Modal */}
+          {showPaytrModal && paytrIframeUrl && (
+            <Dialog 
+              open={showPaytrModal} 
+              fullScreen
+              onClose={() => setShowPaytrModal(false)}
+            >
+              <DialogTitle>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="h5" component="h2">Ödeme Sayfası</Typography>
+                  <Button 
+                    variant="outlined" 
+                    onClick={() => {
+                      setShowPaytrModal(false);
+                      router.push('/profile');
+                    }}
+                  >
+                    Kapat
+                  </Button>
+                </Box>
+              </DialogTitle>
+              <DialogContent sx={{ padding: 0 }}>
+                <Box component="iframe" 
+                  src={paytrIframeUrl} 
+                  sx={{ 
+                    width: '100%', 
+                    height: 'calc(100vh - 100px)', 
+                    border: 'none', 
+                    overflow: 'hidden' 
+                  }}
+                  id="paytriframe"
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+        </Container>
+      </Layout>
+    </>
   );
 }
 

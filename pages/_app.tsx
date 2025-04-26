@@ -3,7 +3,7 @@ import { AppProps } from 'next/app';
 import { Providers } from '../providers/Providers';
 import { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
@@ -14,73 +14,62 @@ import Script from 'next/script';
 import Head from 'next/head';
 import { SessionProvider } from "next-auth/react";
 import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
+import usePerformanceOptimizations from '../hooks/usePerformanceOptimizations';
 
+// RTL cache - Dışarı çıkar ve memorize et
 const cacheRtl = createCache({
   key: 'muirtl',
   stylisPlugins: [prefixer, rtlPlugin],
 });
 
+// LTR cache - Dışarı çıkar ve memorize et
 const cacheLtr = createCache({
   key: 'muiltr',
 });
+
+// Sabit değerler
+const PROGRESS_BAR_CONFIG = {
+  height: '3px',
+  color: '#38a169',
+  options: { showSpinner: false },
+  shallowRouting: true
+};
+
+// Statik önemli bileşenleri memo ile optimizasyonları yap
+const MemoizedProgressBar = memo(ProgressBar);
+const MemoizedToaster = memo(Toaster);
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isRTL = router.locale === 'ar';
   const [isSSR, setIsSSR] = useState(true);
+  
+  // Performans optimizasyonları
+  usePerformanceOptimizations();
 
+  // CSR tespiti - sadece bir kez çalışır
   useEffect(() => {
     setIsSSR(false);
     
-    // Performans optimizasyonları yerine basit optimizasyonlar
-    const optimizePerformance = () => {
-      // Basit performans iyileştirmeleri
-      if (typeof window !== 'undefined') {
-        // Kritik görsellere eager loading ekle
-        document.querySelectorAll('img.critical-image').forEach(img => {
-          (img as HTMLImageElement).loading = 'eager';
-          (img as HTMLImageElement).decoding = 'async';
-        });
+    // WebSockets sayfalarında önbellek devre dışı - kritik
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const hasWebSockets = 
+        path.includes('/templates/') || 
+        path.includes('/cv/') || 
+        path.includes('/web-cv/');
         
-        // Kritik olmayan görsellere lazy loading ekle
-        document.querySelectorAll('img:not(.critical-image)').forEach(img => {
-          if (!(img as HTMLImageElement).loading) {
-            (img as HTMLImageElement).loading = 'lazy';
+      if (hasWebSockets) {
+        window.addEventListener('pageshow', (event) => {
+          if (event.persisted) {
+            window.location.reload();
           }
         });
       }
-    };
-    
-    // Basit optimizasyonları çalıştır
-    optimizePerformance();
+    }
+  }, []);
 
-    // Register route change performance markers
-    const handleRouteChangeStart = () => {
-      if (typeof window !== 'undefined' && 'performance' in window) {
-        window.performance.mark('routeChangeStart');
-      }
-    };
-
-    const handleRouteChangeComplete = () => {
-      if (typeof window !== 'undefined' && 'performance' in window) {
-        window.performance.mark('routeChangeComplete');
-        window.performance.measure(
-          'routeChange',
-          'routeChangeStart',
-          'routeChangeComplete'
-        );
-      }
-    };
-
-    router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-  }, [router.events]);
-
+  // SSR çıkışı - minimal
   if (isSSR) {
     return null;
   }
@@ -92,80 +81,35 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name="referrer" content="strict-origin-when-cross-origin" />
         <title>CV Builder</title>
         
-        {/* Critical preconnects for performance */}
-        <link rel="preconnect" href="https://web-production-9f41e.up.railway.app" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://cekfisi.fra1.cdn.digitaloceanspaces.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Kritik preconnect'ler */}
+        <link rel="preconnect" href="https://web-production-9f41e.up.railway.app" />
+        <link rel="preconnect" href="https://cekfisi.fra1.cdn.digitaloceanspaces.com" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         
-        {/* Preload critical assets */}
+        {/* Kritik varlıkları önceden yükle */}
         <link rel="preload" href="/logo.svg" as="image" type="image/svg+xml" />
         
-        {/* DNS prefetch for performance */}
+        {/* DNS önbellekleme */}
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        
-        {/* Inline critical CSS */}
-        <style dangerouslySetInnerHTML={{ __html: `
-          body {
-            margin: 0;
-            padding: 0;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-          }
-          
-          .hero-section {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            padding: 48px 0;
-            min-height: 600px;
-            overflow: hidden;
-            position: relative;
-          }
-        `}} />
       </Head>
       <SessionProvider session={pageProps.session}>
         <CacheProvider value={isRTL ? cacheRtl : cacheLtr}>
-          {/* Google Analytics - load with higher priority but after paint */}
-          <Script
-            src="https://www.googletagmanager.com/gtag/js?id=G-HDJ50NB3XE"
-            strategy="afterInteractive"
-            onLoad={() => {
-              // Mark analytics as loaded for performance tracking
-              if (typeof window !== 'undefined' && 'performance' in window) {
-                window.performance.mark('analytics-loaded');
-              }
-            }}
-          />
-          <Script id="google-analytics" strategy="afterInteractive">
-            {`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', 'G-HDJ50NB3XE', {
-                send_page_view: false, // Manually track page views for better performance
-              });
-              
-              // Track initial page view after the page is interactive
-              document.addEventListener('DOMContentLoaded', function() {
-                gtag('event', 'page_view', {
-                  page_title: document.title,
-                  page_location: window.location.href,
-                  page_path: window.location.pathname,
-                });
-              });
-            `}
-          </Script>
+          {/* Google Analytics - Production'da ve geç yükleme */}
+          {process.env.NODE_ENV === 'production' && (
+            <Script
+              src="https://www.googletagmanager.com/gtag/js?id=G-HDJ50NB3XE"
+              strategy="afterInteractive"
+              async
+            />
+          )}
           
           <AuthProvider>
             <LanguageProvider>
               <Providers>
-                {/* Add progress bar for better perceived performance */}
-                <ProgressBar
-                  height="3px"
-                  color="#38a169"
-                  options={{ showSpinner: false }}
-                  shallowRouting
-                />
+                <MemoizedProgressBar {...PROGRESS_BAR_CONFIG} />
                 <Component {...pageProps} />
-                <Toaster position={isRTL ? "top-left" : "top-right"} />
+                <MemoizedToaster position={isRTL ? "top-left" : "top-right"} />
               </Providers>
             </LanguageProvider>
           </AuthProvider>
@@ -175,15 +119,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   );
 }
 
-export default appWithTranslation(MyApp);
-
-// Add getInitialProps to load translations
+// getInitialProps'u optimize et - küçült
 MyApp.getInitialProps = async ({ Component, ctx }: any) => {
-  let pageProps = {};
+  return { 
+    pageProps: Component.getInitialProps ? await Component.getInitialProps(ctx) : {} 
+  };
+};
 
-  if (Component.getInitialProps) {
-    pageProps = await Component.getInitialProps(ctx);
-  }
-
-  return { pageProps };
-}; 
+export default appWithTranslation(MyApp); 

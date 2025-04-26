@@ -129,19 +129,24 @@ const PdfGenerator = dynamic(
           }
           
           // PDF oluştur ve indir
-          const success = await pdfService.generatePdf({
-            element: pdfContainer as HTMLElement,
-            filename: `${data.personal_info?.full_name || 'CV'}.pdf`,
-            scale: 2, // Kalite/boyut dengesi için daha az ölçek kullan
-            margin: [10, 10, 10, 10], // Daha küçük marjlar
-            singlePage: true, // Tek sayfaya sığdırma özelliği aktif
-          });
+          await pdfService.generatePdf(
+            pdfContainer as HTMLElement,
+            {
+              filename: `${data.personal_info?.full_name || 'CV'}.pdf`,
+              scale: 2, // Kalite/boyut dengesi için daha az ölçek kullan
+              margin: {
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10
+              },
+              html2canvasOptions: {
+                scale: 2
+              }
+            }
+          );
           
-          if (success) {
-            console.log('PDF successfully generated');
-          } else {
-            console.error('PDF generation failed');
-          }
+          console.log('PDF successfully generated');
         } catch (error) {
           console.error('Error generating PDF:', error);
         } finally {

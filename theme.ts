@@ -3,18 +3,22 @@ import { createTheme } from '@mui/material/styles';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#2196f3',
-      light: '#64b5f6',
-      dark: '#1976d2',
+      main: '#0d47a1',
+      light: '#5472d3',
+      dark: '#002171',
     },
     secondary: {
-      main: '#f50057',
-      light: '#ff4081',
-      dark: '#c51162',
+      main: '#d50000',
+      light: '#ff5131',
+      dark: '#9b0000',
     },
     background: {
       default: '#f5f5f5',
       paper: '#ffffff',
+    },
+    text: {
+      primary: '#212121',
+      secondary: '#424242',
     },
   },
   typography: {
@@ -58,6 +62,22 @@ export const theme = createTheme({
         root: {
           textTransform: 'none',
           borderRadius: 8,
+          '&:focus-visible': {
+            outline: '2px solid #0d47a1',
+            outlineOffset: '2px',
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '&:focus-visible': {
+            outline: '2px solid #0d47a1',
+            outlineOffset: '2px',
+          },
+          minWidth: '44px',
+          minHeight: '44px',
         },
       },
     },

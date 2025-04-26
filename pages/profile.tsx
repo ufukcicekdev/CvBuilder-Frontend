@@ -469,7 +469,7 @@ function Profile() {
                     {profile.username}
                   </Typography>
                   <Typography color="textSecondary">{profile.email}</Typography>
-                  <Typography variant="subtitle1">
+                  <Typography variant="subtitle1" component="p">
                     {profile.user_type === 'jobseeker' ? t('auth.jobseeker') : t('auth.employer')}
                   </Typography>
                 </Box>

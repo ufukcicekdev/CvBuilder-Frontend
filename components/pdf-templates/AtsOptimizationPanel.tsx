@@ -190,7 +190,7 @@ const AtsOptimizationPanel: React.FC<AtsOptimizationPanelProps> = ({
           <Divider sx={{ my: 2 }} />
           
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="subtitle1" component="h3" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
               <Assignment sx={{ mr: 1, fontSize: '1.2rem' }} />
               {t('cv.template.atsCompatibilityScore')}
             </Typography>
@@ -211,7 +211,7 @@ const AtsOptimizationPanel: React.FC<AtsOptimizationPanelProps> = ({
           </Box>
           
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="subtitle1" component="h3" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
               <Lightbulb sx={{ mr: 1, fontSize: '1.2rem' }} />
               {t('cv.template.atsSuggestions')}
             </Typography>
